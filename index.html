@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Composio</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;overscroll-behavior:none}
+body{opacity:0;transition:opacity .45s ease}
+body.ready{opacity:1}
+body.leaving{opacity:0;transform:scale(.985)}
+.snap{height:100dvh;overflow-y:auto;scroll-snap-type:y mandatory;scroll-behavior:smooth;scrollbar-width:none}
+.snap::-webkit-scrollbar{display:none}
+section{min-height:100dvh;scroll-snap-align:start;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 18%;animation:pulse 4.6s ease-in-out infinite alternate;will-change:transform}
+@keyframes pulse{from{transform:scale(1.02)}to{transform:scale(1.13)}}
+.hero-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,0) 35%,rgba(0,0,0,.12) 62%,rgba(0,0,0,.72))}
+.scroll-cue{position:absolute;left:50%;bottom:calc(26px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:3;padding:12px 20px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);box-shadow:0 14px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.35);font-size:11px;letter-spacing:.42em;text-indent:.42em;animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,9px)}}
+.panel{background:radial-gradient(60% 45% at 50% 34%,rgba(99,102,241,.38),rgba(0,0,0,0) 70%),radial-gradient(45% 32% at 78% 72%,rgba(14,165,233,.20),rgba(0,0,0,0) 70%),#000;flex-direction:column;padding:34px 22px calc(34px + env(safe-area-inset-bottom));text-align:center}
+.logo-wrap{position:relative;width:min(80vw,540px);aspect-ratio:1;display:flex;align-items:center;justify-content:center}
+.logo-wrap:before{content:'';position:absolute;inset:8%;border-radius:50%;background:rgba(99,102,241,.35);filter:blur(58px)}
+.logo{position:relative;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 24px 55px rgba(0,0,0,.65));animation:floaty 5s ease-in-out infinite alternate}
+@keyframes floaty{from{transform:translateY(-6px) scale(1)}to{transform:translateY(8px) scale(1.025)}}
+.glass-btn{position:relative;z-index:2;margin-top:38px;display:inline-flex;align-items:center;justify-content:center;min-width:min(78vw,360px);padding:20px 46px;border-radius:999px;color:#fff;text-decoration:none;font-size:24px;font-weight:700;letter-spacing:.14em;background:linear-gradient(135deg,rgba(255,255,255,.34),rgba(255,255,255,.10) 45%,rgba(255,255,255,.22));border:1px solid rgba(255,255,255,.52);backdrop-filter:blur(20px) saturate(170%);-webkit-backdrop-filter:blur(20px) saturate(170%);box-shadow:0 22px 55px rgba(0,0,0,.50),0 0 0 1px rgba(255,255,255,.08) inset,0 1px 0 rgba(255,255,255,.55) inset,0 -14px 28px rgba(255,255,255,.08) inset;overflow:hidden;transition:transform .16s ease,box-shadow .16s ease}
+.glass-btn:before{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.45) 48%,transparent 72%);transform:translateX(-120%);animation:shine 3.4s ease-in-out infinite}
+@keyframes shine{0%,55%{transform:translateX(-120%)}90%,100%{transform:translateX(120%)}}
+.glass-btn:active{transform:scale(.965);box-shadow:0 12px 32px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.45) inset}
+.hint{margin-top:20px;font-size:12px;letter-spacing:.28em;text-indent:.28em;color:rgba(255,255,255,.58);text-transform:uppercase}
+.reveal{opacity:0;transform:translateY(26px) scale(.985);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1)}
+.reveal.visible{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<main class="snap" id="snap">
+  <section aria-label="Intro">
+    <img class="hero-img" src="https://imageupload.io/f/L7t2uuIZ.jpg" alt="" fetchpriority="high">
+    <div class="hero-shade"></div>
+    <div class="scroll-cue">SWIPE</div>
+  </section>
+  <section class="panel" aria-label="Composio">
+    <div class="logo-wrap reveal"><img class="logo" src="https://imageupload.io/f/9n60A3Ws.jpg" alt="Composio"></div>
+    <a class="glass-btn reveal" id="go" href="https://dashboard.composio.dev/">Composio</a>
+    <div class="hint reveal">Tap to open</div>
+  </section>
+</main>
+<script>
+(function(){
+  var tg = window.Telegram && window.Telegram.WebApp;
+  var target = 'https://dashboard.composio.dev/';
+  try {
+    var params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    var t = params.get('t');
+    if (t) target = decodeURIComponent(t);
+    var pre = document.createElement('link');
+    pre.rel = 'preconnect';
+    pre.href = new URL(target).origin;
+    document.head.appendChild(pre);
+  } catch(e) {}
+  var go = document.getElementById('go');
+  go.setAttribute('href', target);
+  if (tg) {
+    tg.ready();
+    tg.expand();
+    if (tg.setHeaderColor) tg.setHeaderColor('#000000');
+    if (tg.setBackgroundColor) tg.setBackgroundColor('#000000');
+  }
+  document.body.classList.add('ready');
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting) en.target.classList.add('visible'); });
+  }, {threshold: .28});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  go.addEventListener('click', function(e){
+    e.preventDefault();
+    try { if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium'); } catch(err) {}
+    document.body.classList.add('leaving');
+    setTimeout(function(){ window.location.href = target; }, 180);
+  });
+})();
+</script>
+</body>
+</html>
