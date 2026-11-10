@@ -3,172 +3,79 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Shado Browser</title>
+<title>Shado Agent</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;overscroll-behavior:none}
-body{opacity:0;transition:opacity .45s ease}
-body.ready{opacity:1}
-body.leaving{opacity:0;transform:scale(.985)}
-.snap{height:100dvh;overflow-y:auto;scroll-snap-type:y mandatory;scroll-behavior:smooth;scrollbar-width:none}
-.snap::-webkit-scrollbar{display:none}
+html,body{height:100%;background:#131311;color:#f2f0eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;overscroll-behavior:none}
+body{opacity:0;transition:opacity .4s ease}
+body.ready{opacity:1}body.leaving{opacity:0}
+.snap{height:100dvh;overflow-y:auto;scroll-snap-type:y mandatory;scroll-behavior:smooth;scrollbar-width:none}.snap::-webkit-scrollbar{display:none}
 section{min-height:100dvh;scroll-snap-align:start;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.topbar{position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:9px;padding:9px 16px;border-radius:999px;background:rgba(20,20,28,.42);border:1px solid rgba(255,255,255,.30);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);box-shadow:0 12px 34px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.30);font-size:11px;font-weight:700;letter-spacing:.24em;text-indent:.08em;white-space:nowrap}
-.topbar i{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 12px #34d399;display:inline-block}
-.dock{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;display:flex;gap:7px;padding:7px;border-radius:999px;background:rgba(18,18,26,.46);border:1px solid rgba(255,255,255,.30);backdrop-filter:blur(20px) saturate(170%);-webkit-backdrop-filter:blur(20px) saturate(170%);box-shadow:0 18px 44px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.28)}
-.dock button{appearance:none;border:1px solid rgba(255,255,255,.20);background:rgba(255,255,255,.10);color:#fff;border-radius:999px;padding:11px 15px;font-size:12.5px;font-weight:700;letter-spacing:.05em;cursor:pointer;white-space:nowrap}
-.dock button:active{transform:scale(.95);background:rgba(255,255,255,.24)}
-.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 18%;animation:pulse 4.6s ease-in-out infinite alternate;will-change:transform}
-@keyframes pulse{from{transform:scale(1.02)}to{transform:scale(1.13)}}
-.hero-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,0) 35%,rgba(0,0,0,.12) 62%,rgba(0,0,0,.72))}
-.scroll-cue{position:absolute;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:3;padding:12px 20px;border-radius:999px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);box-shadow:0 14px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.35);font-size:11px;letter-spacing:.42em;text-indent:.42em;animation:bob 1.8s ease-in-out infinite}
-@keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,9px)}}
-.panel{background:radial-gradient(60% 45% at 50% 34%,rgba(99,102,241,.38),rgba(0,0,0,0) 70%),radial-gradient(45% 32% at 78% 72%,rgba(14,165,233,.20),rgba(0,0,0,0) 70%),#000;flex-direction:column;padding:70px 22px calc(104px + env(safe-area-inset-bottom));text-align:center}
-.panel-insta{background:radial-gradient(60% 45% at 50% 34%,rgba(236,72,153,.34),rgba(0,0,0,0) 70%),radial-gradient(45% 32% at 78% 72%,rgba(249,115,22,.22),rgba(0,0,0,0) 70%),#000}
-.panel-command{background:#000}
-#stars{position:absolute;inset:0;width:100%;height:100%}
-.cmd-card{position:relative;z-index:2;width:min(88vw,520px);padding:30px 24px;border-radius:30px;background:linear-gradient(150deg,rgba(255,255,255,.16),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.30);backdrop-filter:blur(22px) saturate(170%);-webkit-backdrop-filter:blur(22px) saturate(170%);box-shadow:0 30px 70px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.35)}
-.cmd-hello{font-size:15px;color:rgba(255,255,255,.72);letter-spacing:.14em;text-transform:uppercase}
-.cmd-name{font-size:34px;font-weight:800;margin-top:8px;background:linear-gradient(90deg,#fff,#a5b4fc,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent}
-.cmd-clock{margin-top:10px;font-size:14px;color:rgba(255,255,255,.65);font-variant-numeric:tabular-nums}
-.cmd-status{margin-top:16px;display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.45);font-size:12.5px;font-weight:700}
-.cmd-status i{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 12px #34d399;animation:blink 1.6s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
-.grid{position:relative;z-index:2;margin-top:24px;width:min(88vw,520px);display:grid;grid-template-columns:1fr 1fr;gap:13px}
-.tile{padding:20px 12px;border-radius:22px;color:#fff;text-decoration:none;background:linear-gradient(150deg,rgba(255,255,255,.18),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 18px 42px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.30);font-weight:800;font-size:16.5px;transition:transform .15s ease}
-.tile small{display:block;margin-top:7px;font-weight:600;font-size:11.5px;color:rgba(255,255,255,.62);letter-spacing:.05em}
-.tile:active{transform:scale(.96)}
-.logo-wrap{position:relative;width:min(80vw,540px);aspect-ratio:1;display:flex;align-items:center;justify-content:center}
-.logo-wrap:before{content:'';position:absolute;inset:8%;border-radius:50%;background:rgba(99,102,241,.35);filter:blur(58px)}
-.panel-insta .logo-wrap:before{background:rgba(236,72,153,.34)}
-.logo{position:relative;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 24px 55px rgba(0,0,0,.65));animation:floaty 5s ease-in-out infinite alternate}
-@keyframes floaty{from{transform:translateY(-6px) scale(1)}to{transform:translateY(8px) scale(1.025)}}
-.glass-btn{position:relative;z-index:2;margin-top:38px;display:inline-flex;align-items:center;justify-content:center;min-width:min(78vw,360px);padding:20px 46px;border-radius:999px;color:#fff;text-decoration:none;font-size:24px;font-weight:700;letter-spacing:.14em;background:linear-gradient(135deg,rgba(255,255,255,.34),rgba(255,255,255,.10) 45%,rgba(255,255,255,.22));border:1px solid rgba(255,255,255,.52);backdrop-filter:blur(20px) saturate(170%);-webkit-backdrop-filter:blur(20px) saturate(170%);box-shadow:0 22px 55px rgba(0,0,0,.50),0 0 0 1px rgba(255,255,255,.08) inset,0 1px 0 rgba(255,255,255,.55) inset,0 -14px 28px rgba(255,255,255,.08) inset;overflow:hidden;transition:transform .16s ease,box-shadow .16s ease}
-.glass-btn:before{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.45) 48%,transparent 72%);transform:translateX(-120%);animation:shine 3.4s ease-in-out infinite}
-@keyframes shine{0%,55%{transform:translateX(-120%)}90%,100%{transform:translateX(120%)}}
-.glass-btn:active{transform:scale(.965);box-shadow:0 12px 32px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.45) inset}
-.hint{margin-top:20px;font-size:12px;letter-spacing:.28em;text-indent:.28em;color:rgba(255,255,255,.58);text-transform:uppercase}
-.reveal{opacity:0;transform:translateY(26px) scale(.985);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1)}
-.reveal.visible{opacity:1;transform:none}
+.topbar{position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:9px;padding:9px 16px;border-radius:999px;background:rgba(24,24,22,.72);border:1px solid #343431;backdrop-filter:blur(16px);box-shadow:0 12px 34px rgba(0,0,0,.45);font-size:11px;font-weight:700;letter-spacing:.22em;white-space:nowrap}
+.topbar i{width:8px;height:8px;border-radius:50%;background:#c6613f;box-shadow:0 0 12px #c6613f}
+.dock{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;display:flex;gap:7px;padding:7px;border-radius:999px;background:rgba(22,22,20,.78);border:1px solid #343431;backdrop-filter:blur(18px);box-shadow:0 18px 44px rgba(0,0,0,.5)}
+.dock button{appearance:none;border:1px solid #343431;background:#20201e;color:#f2f0eb;border-radius:999px;padding:11px 14px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}.dock button:active{transform:scale(.95);background:#2b2b28}
+.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 18%;animation:pulse 4.6s ease-in-out infinite alternate}@keyframes pulse{from{transform:scale(1.02)}to{transform:scale(1.13)}}
+.hero-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.2),transparent 35%,rgba(19,19,17,.78))}
+.scroll-cue{position:absolute;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:3;padding:12px 20px;border-radius:999px;background:rgba(24,24,22,.6);border:1px solid #45443f;backdrop-filter:blur(14px);font-size:11px;letter-spacing:.4em;text-indent:.4em;animation:bob 1.8s ease-in-out infinite}@keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,9px)}}
+.panel{background:#131311;flex-direction:column;padding:74px 20px calc(106px + env(safe-area-inset-bottom));text-align:center}
+.panel-insta{background:radial-gradient(60% 42% at 50% 32%,rgba(198,97,63,.16),transparent 70%),#131311}
+.cmd-card{position:relative;z-index:2;width:min(90vw,540px);padding:28px 24px;border-radius:26px;background:#1a1a19;border:1px solid #2c2c2a;box-shadow:0 26px 60px rgba(0,0,0,.5);text-align:left}
+.cmd-hello{font-size:13px;color:#a09e96;letter-spacing:.16em;text-transform:uppercase}
+.cmd-name{font-size:33px;font-weight:800;margin-top:7px;color:#f5f3ee}
+.cmd-clock{margin-top:8px;font-size:13.5px;color:#8f8d85;font-variant-numeric:tabular-nums}
+.cmd-status{margin-top:15px;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgba(198,97,63,.13);border:1px solid rgba(198,97,63,.55);font-size:12px;font-weight:700;color:#eda27f}
+.cmd-status i{width:8px;height:8px;border-radius:50%;background:#c6613f;box-shadow:0 0 12px #c6613f;animation:blink 1.6s infinite}@keyframes blink{50%{opacity:.3}}
+.agent-box{position:relative;z-index:2;width:min(90vw,540px);margin-top:16px;padding:22px;border-radius:26px;background:#1a1a19;border:1px solid #2c2c2a;box-shadow:0 26px 60px rgba(0,0,0,.5);text-align:left}
+.agent-title{font-size:19px;font-weight:800}.agent-sub{margin-top:6px;font-size:13px;line-height:1.65;color:#a09e96}
+.field{width:100%;margin-top:14px;padding:15px 16px;border-radius:15px;border:1px solid #343431;background:#111110;color:#f2f0eb;font-size:15px;outline:none;font-family:inherit}.field:focus{border-color:#c6613f}textarea.field{min-height:104px;resize:vertical;line-height:1.6}
+.run-btn{width:100%;margin-top:15px;padding:17px;border:0;border-radius:16px;background:#c6613f;color:#fff;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 16px 36px rgba(198,97,63,.32)}.run-btn:active{transform:scale(.98)}.run-btn:disabled{opacity:.55}
+.agent-result{margin-top:14px;padding:14px 15px;border-radius:14px;background:#111110;border:1px solid #2c2c2a;color:#d8d5cc;font-size:13.5px;line-height:1.75;white-space:pre-wrap;word-break:break-word;display:none;max-height:240px;overflow:auto}
+.grid{position:relative;z-index:2;margin-top:16px;width:min(90vw,540px);display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{padding:18px 12px;border-radius:20px;color:#f2f0eb;text-decoration:none;background:#1a1a19;border:1px solid #2c2c2a;font-weight:800;font-size:16px}.tile small{display:block;margin-top:6px;font-weight:600;font-size:11.5px;color:#8f8d85}.tile:active{transform:scale(.96)}
+.logo-wrap{position:relative;width:min(80vw,540px);aspect-ratio:1;display:flex;align-items:center;justify-content:center}.logo{position:relative;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 24px 55px rgba(0,0,0,.65));animation:floaty 5s ease-in-out infinite alternate}@keyframes floaty{from{transform:translateY(-6px)}to{transform:translateY(8px)}}
+.glass-btn{position:relative;z-index:2;margin-top:34px;display:inline-flex;align-items:center;justify-content:center;min-width:min(78vw,360px);padding:19px 42px;border-radius:999px;color:#fff;text-decoration:none;font-size:23px;font-weight:800;letter-spacing:.1em;background:#c6613f;border:1px solid rgba(255,255,255,.25);box-shadow:0 20px 46px rgba(0,0,0,.5)}
+.glass-btn:active{transform:scale(.96)}
+.hint{margin-top:18px;font-size:11.5px;letter-spacing:.26em;text-indent:.26em;color:#74726b;text-transform:uppercase}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}.reveal.visible{opacity:1;transform:none}
 </style>
 </head>
 <body>
-<div class="topbar"><i></i>SHADO BROWSER</div>
-<nav class="dock"><button data-go="home" type="button">Home</button><button data-go="command" type="button">Command</button><button data-go="composio" type="button">Composio</button><button data-go="instagram" type="button">Instagram</button></nav>
-<main class="snap" id="snap">
-  <section id="home" aria-label="Intro">
-    <img class="hero-img" src="https://imageupload.io/f/L7t2uuIZ.jpg" alt="" fetchpriority="high">
-    <div class="hero-shade"></div>
-    <div class="scroll-cue">SWIPE</div>
-  </section>
-  <section id="command" class="panel panel-command" aria-label="Command Center">
-    <canvas id="stars"></canvas>
-    <div class="cmd-card reveal">
-      <div class="cmd-hello" id="hello">Welcome back</div>
-      <div class="cmd-name" id="uname">Commander</div>
-      <div class="cmd-clock" id="clock">--:--:--</div>
-      <div class="cmd-status"><i></i>ROBOT ONLINE</div>
-    </div>
-    <div class="grid reveal">
-      <a class="tile" id="tile-composio" href="https://dashboard.composio.dev/">Composio<small>AI dashboard</small></a>
-      <a class="tile" href="https://github.com/azhwan609">GitHub<small>my repositories</small></a>
-      <a class="tile" href="https://www.instagram.com/accounts/login/">Instagram<small>open account</small></a>
-      <a class="tile" href="https://www.google.com/">Google<small>fast search</small></a>
-    </div>
-  </section>
-  <section id="composio" class="panel" aria-label="Composio">
-    <div class="logo-wrap reveal"><img class="logo" src="https://imageupload.io/f/9n60A3Ws.jpg" alt="Composio"></div>
-    <a class="glass-btn reveal" id="go" href="https://dashboard.composio.dev/">Composio</a>
-    <div class="hint reveal">Tap to open</div>
-  </section>
-  <section id="instagram" class="panel panel-insta" aria-label="Instagram">
-    <div class="logo-wrap reveal"><img class="logo" src="https://imageupload.io/f/BCBmg41P.jpg" alt="Instagram"></div>
-    <a class="glass-btn reveal" id="go-insta" href="https://www.instagram.com/accounts/login/">instagram</a>
-    <div class="hint reveal">Tap to open</div>
-  </section>
+<div class="topbar"><i></i>SHADO AGENT</div>
+<nav class="dock"><button data-go="home" type="button">Home</button><button data-go="command" type="button">Agent</button><button data-go="composio" type="button">Composio</button><button data-go="instagram" type="button">Instagram</button></nav>
+<main class="snap">
+<section id="home"><img class="hero-img" src="https://imageupload.io/f/L7t2uuIZ.jpg" alt=""><div class="hero-shade"></div><div class="scroll-cue">SWIPE</div></section>
+<section id="command" class="panel">
+<div class="cmd-card reveal"><div class="cmd-hello">Welcome back</div><div class="cmd-name" id="uname">Commander</div><div class="cmd-clock" id="clock">--:--:--</div><div class="cmd-status"><i></i>AGENT READY</div></div>
+<div class="agent-box reveal"><div class="agent-title">Autonomous Agent</div><div class="agent-sub">Give me a website and a mission. I will open it, look at the pages, click through the steps and report back.</div><input class="field" id="siteUrl" type="url" placeholder="Website or GitHub repo URL (optional)"><textarea class="field" id="taskText" placeholder="Example: Go to this repo, inspect the code and summarize what it does..."></textarea><button class="run-btn" id="runBtn" type="button">Run Agent</button><div class="agent-result" id="agentResult"></div></div>
+<div class="grid reveal"><a class="tile" id="tile-composio" href="https://dashboard.composio.dev/">Composio<small>AI dashboard</small></a><a class="tile" href="https://github.com/azhwan609">GitHub<small>my repositories</small></a><a class="tile" href="https://www.instagram.com/accounts/login/">Instagram<small>open account</small></a><a class="tile" href="https://www.google.com/">Google<small>fast search</small></a></div>
+</section>
+<section id="composio" class="panel"><div class="logo-wrap reveal"><img class="logo" src="https://imageupload.io/f/9n60A3Ws.jpg" alt="Composio"></div><a class="glass-btn reveal" id="go" href="https://dashboard.composio.dev/">Composio</a><div class="hint reveal">Tap to open</div></section>
+<section id="instagram" class="panel panel-insta"><div class="logo-wrap reveal"><img class="logo" src="https://imageupload.io/f/BCBmg41P.jpg" alt="Instagram"></div><a class="glass-btn reveal" id="go-insta" href="https://www.instagram.com/accounts/login/">instagram</a><div class="hint reveal">Tap to open</div></section>
 </main>
 <script>
 (function(){
-  var tg = window.Telegram && window.Telegram.WebApp;
-  var target = 'https://dashboard.composio.dev/';
-  var instaTarget = 'https://www.instagram.com/accounts/login/';
-  function preconnect(url){ try { var pre=document.createElement('link'); pre.rel='preconnect'; pre.href=new URL(url).origin; document.head.appendChild(pre); } catch(e){} }
-  try {
-    var params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-    var t = params.get('t');
-    if (t) target = decodeURIComponent(t);
-  } catch(e) {}
-  preconnect(target); preconnect(instaTarget); preconnect('https://github.com');
-  function navigate(url){
-    try { if (tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium'); } catch(err) {}
-    document.body.classList.add('leaving');
-    setTimeout(function(){ window.location.href = url; }, 180);
-  }
-  function bind(id, url){
-    var el = document.getElementById(id);
-    if(!el) return;
-    el.setAttribute('href', url);
-    el.addEventListener('click', function(e){ e.preventDefault(); navigate(url); });
-  }
-  bind('go', target);
-  bind('go-insta', instaTarget);
-  bind('tile-composio', target);
-  document.querySelectorAll('.tile').forEach(function(tile){
-    if(tile.id==='tile-composio') return;
-    tile.addEventListener('click', function(e){ e.preventDefault(); navigate(tile.getAttribute('href')); });
-  });
-  document.querySelectorAll('[data-go]').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      try { if (tg && tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); } catch(err) {}
-      var el = document.getElementById(btn.getAttribute('data-go'));
-      if (el) el.scrollIntoView({behavior:'smooth'});
-    });
-  });
-  try {
-    var user = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
-    if (user && user.first_name) {
-      document.getElementById('uname').textContent = user.first_name;
-      document.getElementById('hello').textContent = 'Welcome back';
-    }
-  } catch(e) {}
-  function tick(){
-    var d = new Date();
-    function p(n){ return (n<10?'0':'')+n; }
-    document.getElementById('clock').textContent = p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
-  }
-  tick(); setInterval(tick, 1000);
-  var canvas = document.getElementById('stars');
-  if (canvas) {
-    var ctx = canvas.getContext('2d'); var stars = [];
-    function resize(){
-      canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
-      stars = [];
-      for (var i=0;i<90;i++) stars.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, r:Math.random()*1.7+.3, s:Math.random()*.35+.06, o:Math.random()*.6+.25});
-    }
-    function draw(){
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      stars.forEach(function(st){
-        ctx.globalAlpha = st.o; ctx.fillStyle = '#c7d2fe';
-        ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, Math.PI*2); ctx.fill();
-        st.y -= st.s; if (st.y < -3) { st.y = canvas.height+3; st.x = Math.random()*canvas.width; }
-      });
-      ctx.globalAlpha = 1;
-      requestAnimationFrame(draw);
-    }
-    resize(); window.addEventListener('resize', resize); draw();
-  }
-  if (tg) {
-    tg.ready();
-    tg.expand();
-    if (tg.setHeaderColor) tg.setHeaderColor('#000000');
-    if (tg.setBackgroundColor) tg.setBackgroundColor('#000000');
-  }
-  document.body.classList.add('ready');
-  var io = new IntersectionObserver(function(entries){
-    entries.forEach(function(en){ if(en.isIntersecting) en.target.classList.add('visible'); });
-  }, {threshold: .28});
-  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+var tg=window.Telegram&&window.Telegram.WebApp;
+var AGENT_API='https://shado-agent.onrender.com';
+var target='https://dashboard.composio.dev/';
+var instaTarget='https://www.instagram.com/accounts/login/';
+try{var p=new URLSearchParams(location.hash.replace(/^#/,'')),t=p.get('t');if(t)target=decodeURIComponent(t);}catch(e){}
+function navigate(url){try{if(tg&&tg.HapticFeedback)tg.HapticFeedback.impactOccurred('medium');}catch(e){}document.body.classList.add('leaving');setTimeout(function(){location.href=url;},160);}
+function bind(id,url){var el=document.getElementById(id);if(!el)return;el.setAttribute('href',url);el.addEventListener('click',function(e){e.preventDefault();navigate(url);});}
+bind('go',target);bind('go-insta',instaTarget);bind('tile-composio',target);
+document.querySelectorAll('.tile').forEach(function(tile){if(tile.id==='tile-composio')return;tile.addEventListener('click',function(e){e.preventDefault();navigate(tile.getAttribute('href'));});});
+document.querySelectorAll('[data-go]').forEach(function(btn){btn.addEventListener('click',function(){var el=document.getElementById(btn.getAttribute('data-go'));if(el)el.scrollIntoView({behavior:'smooth'});});});
+try{var u=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user;if(u&&u.first_name)document.getElementById('uname').textContent=u.first_name;}catch(e){}
+function tick(){var d=new Date(),p=function(n){return(n<10?'0':'')+n;};document.getElementById('clock').textContent=p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());}tick();setInterval(tick,1000);
+var runBtn=document.getElementById('runBtn'),result=document.getElementById('agentResult');
+function show(txt){result.style.display='block';result.textContent=txt;}
+async function poll(id){for(var i=0;i<45;i++){await new Promise(r=>setTimeout(r,8000));try{var res=await fetch(AGENT_API+'/api/status/'+encodeURIComponent(id));var data=await res.json();var d=data.data||data;var st=String(d.status||data.status||'').toLowerCase();if(['completed','failed','error','cancelled','stopped'].includes(st)){var out=d.finalResult||d.result||d.output||'';show('Done ('+st+')\n\n'+(typeof out==='string'?out:JSON.stringify(out,null,2)));runBtn.disabled=false;runBtn.textContent='Run Agent';return;}show('Agent is working... step check '+(i+1)+'\nTask ID: '+id);}catch(e){show('Waiting for the agent server... it may be waking up.');}}show('Still working. You can also watch the result in the bot chat.');runBtn.disabled=false;runBtn.textContent='Run Agent';}
+runBtn.addEventListener('click',async function(){var site=document.getElementById('siteUrl').value.trim();var task=document.getElementById('taskText').value.trim();if(!task&&!site){show('Write a mission first.');return;}var full=(site?('Go to '+site+'. '):'')+task;runBtn.disabled=true;runBtn.textContent='Starting...';show('Waking the agent server and starting your mission...');try{var res=await fetch(AGENT_API+'/api/command',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task:full,initData:tg?tg.initData:''})});var data=await res.json();if(!res.ok||!data.jobId)throw new Error(data.error||'server error');show('Agent started. Watching it work...\nTask ID: '+data.jobId);poll(data.jobId);}catch(e){show('Could not start the agent: '+e.message+'\nThe server may still be deploying, or its keys are not set yet.');runBtn.disabled=false;runBtn.textContent='Run Agent';}});
+if(tg){tg.ready();tg.expand();if(tg.setHeaderColor)tg.setHeaderColor('#131311');if(tg.setBackgroundColor)tg.setBackgroundColor('#131311');}
+document.body.classList.add('ready');
+var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting)en.target.classList.add('visible');});},{threshold:.22});
+document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
 })();
 </script>
 </body>
