@@ -1,0 +1,29 @@
+// Enhancement layer loaded with NODE_OPTIONS=--require=./enhance.js
+// Adds: same-origin panel, two-user allowlist gate, /run execution from chat.
+const http=require('http');
+const fs=require('fs');
+const path=require('path');
+const {PassThrough}=require('stream');
+const BOT_TOKEN=process.env.TELEGRAM_BOT_TOKEN||'';
+const HB_KEY=process.env.HYPERBROWSER_API_KEY||'';
+const HB_PROFILE=process.env.HYPERBROWSER_PROFILE_ID||'';
+const ALLOWED=new Set((process.env.ALLOWED_TELEGRAM_USER_IDS||'').split(',').map(s=>s.trim()).filter(Boolean));
+const PANEL_FILE=path.join(__dirname,'panel.html');
+function json(res,code,obj){res.writeHead(code,{'Content-Type':'application/json'});res.end(JSON.stringify(obj));}
+async function tg(method,body){if(!BOT_TOKEN)return null;const r=await fetch('https://api.telegram.org/bot'+BOT_TOKEN+'/'+method,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});return r.json().catch(()=>null);}
+async function hb(p,method,body){if(!HB_KEY)throw new Error('HYPERBROWSER_API_KEY missing');const r=await fetch('https://api.hyperbrowser.ai'+p,{method:method||'GET',headers:{'Content-Type':'application/json','x-api-key':HB_KEY},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error('Hyperbrowser '+r.status);return d;}
+async function startAgent(task){const guarded='Important rules: Work efficiently and finish as soon as the goal is met. If you reach a login page and are not already logged in, do NOT guess credentials or submit repeatedly. Stop immediately and report LOGIN_REQUIRED.\n\nTask: '+task;const payload={task:guarded,llm:'gemini-2.0-flash',plannerLlm:'gemini-2.0-flash',pageExtractionLlm:'gemini-2.0-flash',useVision:true,maxSteps:25};if(HB_PROFILE)payload.sessionOptions={profile:{id:HB_PROFILE,persistChanges:true}};const d=await hb('/api/task/browser-use','POST',payload);return d.jobId||d.id||(d.data&&(d.data.jobId||d.data.id));}
+async function poll(chatId,jobId){for(let i=0;i<40;i++){await new Promise(r=>setTimeout(r,20000));try{const s=await hb('/api/task/browser-use/'+encodeURIComponent(jobId),'GET');const d=s.data||s;const st=String(d.status||s.status||'').toLowerCase();const out=d.finalResult||d.result||d.output||'';if(out||['completed','failed','error','cancelled','stopped'].includes(st)){await tg('sendMessage',{chat_id:chatId,text:('Agent finished'+(st?' ('+st+')':'')+'\n\n'+(typeof out==='string'?out:JSON.stringify(out))).slice(0,3900)});return;}}catch(e){}}}
+async function executeTask(chatId,task){try{await tg('sendMessage',{chat_id:chatId,text:'Got it. Agent is starting...'});const id=await startAgent(task);await tg('sendMessage',{chat_id:chatId,text:'Agent started. Task ID: '+id});poll(chatId,id);}catch(e){await tg('sendMessage',{chat_id:chatId,text:'Agent error: '+(e.message||e)});}}
+function replay(req,res,handler,buf){const fake=new PassThrough();fake.method=req.method;fake.url=req.url;fake.headers=req.headers;fake.httpVersion=req.httpVersion;fake.socket=req.socket;fake.connection=req.connection;handler(fake,res);fake.end(buf);}
+function readBody(req){return new Promise(resolve=>{const chunks=[];req.on('data',c=>chunks.push(c));req.on('end',()=>resolve(Buffer.concat(chunks)));req.on('error',()=>resolve(Buffer.concat(chunks)));});}
+function claimedTelegramUser(initData){try{const p=new URLSearchParams(String(initData||''));const u=JSON.parse(p.get('user')||'{}');return u&&u.id?String(u.id):'';}catch(e){return '';}}
+const originalCreateServer=http.createServer;
+http.createServer=function(handler){return originalCreateServer(async(req,res)=>{try{const url=new URL(req.url||'/', 'http://localhost');if(req.method==='GET'&&(url.pathname==='/panel'||url.pathname==='/ready')){try{const html=fs.readFileSync(PANEL_FILE);res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});res.end(html);}catch(e){json(res,503,{error:'panel not installed yet'});}return;}
+if(req.method==='POST'&&url.pathname==='/api/auth/telegram'){const buf=await readBody(req);let uid='';try{uid=claimedTelegramUser(JSON.parse(buf.toString('utf8')||'{}').initData);}catch(e){}if(ALLOWED.size&&uid&&!ALLOWED.has(uid))return json(res,403,{error:'This ready environment is limited to the two approved Telegram accounts.'});return replay(req,res,handler,buf);}
+if(req.method==='POST'&&url.pathname==='/telegram'){const buf=await readBody(req);let update={};try{update=JSON.parse(buf.toString('utf8')||'{}');}catch(e){}const msg=update.message||update.edited_message;const uid=msg&&msg.from?String(msg.from.id||''):'';const chatId=msg&&msg.chat?msg.chat.id:null;const text=msg&&msg.text?String(msg.text):'';if(ALLOWED.size&&uid&&!ALLOWED.has(uid)){if(chatId)tg('sendMessage',{chat_id:chatId,text:'Access is limited to the two approved Telegram accounts.'}).catch(()=>{});return json(res,200,{ok:true});}
+const runMatch=text.match(/^\/run(?:@\w+)?\s+([\s\S]+)/)||text.match(/^اجرا کن[:：]\s*([\s\S]+)/);if(chatId&&(runMatch||/^\/run(?:@\w+)?\s*$/.test(text))){const task=runMatch?runMatch[1].trim():'';json(res,200,{ok:true});if(!task)tg('sendMessage',{chat_id:chatId,text:'Usage: /run <website task>'}).catch(()=>{});else executeTask(chatId,task.slice(0,3000));return;}
+return replay(req,res,handler,buf);}
+return handler(req,res);}catch(e){return handler(req,res);}});};
+if(BOT_TOKEN)setTimeout(()=>{tg('setMyCommands',{commands:[{command:'start',description:'Start the robot'},{command:'run',description:'Run a web task: /run <task>'},{command:'panel',description:'Open the ready panel'}]}).catch(()=>{});},6000);
+console.log('enhance layer active; allowlist='+(ALLOWED.size?ALLOWED.size+' users':'open'));
