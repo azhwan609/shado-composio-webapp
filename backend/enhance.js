@@ -1,4 +1,4 @@
-// Enhancement layer loaded with NODE_OPTIONS=--require=./enhance.js
+// Enhancement layer loaded with: node -r ./enhance.js server.js
 // Adds: same-origin panel, two-user allowlist gate, /run execution from chat.
 const http=require('http');
 const fs=require('fs');
@@ -9,6 +9,7 @@ const HB_KEY=process.env.HYPERBROWSER_API_KEY||'';
 const HB_PROFILE=process.env.HYPERBROWSER_PROFILE_ID||'';
 const ALLOWED=new Set((process.env.ALLOWED_TELEGRAM_USER_IDS||'').split(',').map(s=>s.trim()).filter(Boolean));
 const PANEL_FILE=path.join(__dirname,'panel.html');
+const PANEL_URL=process.env.WEBAPP_URL||'https://neuralsync-agent.onrender.com/panel';
 function json(res,code,obj){res.writeHead(code,{'Content-Type':'application/json'});res.end(JSON.stringify(obj));}
 async function tg(method,body){if(!BOT_TOKEN)return null;const r=await fetch('https://api.telegram.org/bot'+BOT_TOKEN+'/'+method,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});return r.json().catch(()=>null);}
 async function hb(p,method,body){if(!HB_KEY)throw new Error('HYPERBROWSER_API_KEY missing');const r=await fetch('https://api.hyperbrowser.ai'+p,{method:method||'GET',headers:{'Content-Type':'application/json','x-api-key':HB_KEY},body:body?JSON.stringify(body):undefined});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error('Hyperbrowser '+r.status);return d;}
@@ -22,9 +23,9 @@ const originalCreateServer=http.createServer;
 http.createServer=function(handler){return originalCreateServer(async(req,res)=>{try{const url=new URL(req.url||'/', 'http://localhost');if(req.method==='GET'&&(url.pathname==='/panel'||url.pathname==='/ready')){try{const html=fs.readFileSync(PANEL_FILE);res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});res.end(html);}catch(e){json(res,503,{error:'panel not installed yet'});}return;}
 if(req.method==='POST'&&url.pathname==='/api/auth/telegram'){const buf=await readBody(req);let uid='';try{uid=claimedTelegramUser(JSON.parse(buf.toString('utf8')||'{}').initData);}catch(e){}if(ALLOWED.size&&uid&&!ALLOWED.has(uid))return json(res,403,{error:'This ready environment is limited to the two approved Telegram accounts.'});return replay(req,res,handler,buf);}
 if(req.method==='POST'&&url.pathname==='/telegram'){const buf=await readBody(req);let update={};try{update=JSON.parse(buf.toString('utf8')||'{}');}catch(e){}const msg=update.message||update.edited_message;const uid=msg&&msg.from?String(msg.from.id||''):'';const chatId=msg&&msg.chat?msg.chat.id:null;const text=msg&&msg.text?String(msg.text):'';if(ALLOWED.size&&uid&&!ALLOWED.has(uid)){if(chatId)tg('sendMessage',{chat_id:chatId,text:'Access is limited to the two approved Telegram accounts.'}).catch(()=>{});return json(res,200,{ok:true});}
-if(chatId&&/^\/(panel|ready)(?:@\w+)?\s*$/.test(text)){json(res,200,{ok:true});const panelUrl=process.env.WEBAPP_URL||'';tg('sendMessage',{chat_id:chatId,text:'Ready panel:',reply_markup:panelUrl?{inline_keyboard:[[{text:'Open ready panel',web_app:{url:panelUrl}}]]}:undefined}).catch(()=>{});return;}
-const runMatch=text.match(/^\/run(?:@\w+)?\s+([\s\S]+)/)||text.match(/^اجرا کن[:：]\s*([\s\S]+)/);if(chatId&&(runMatch||/^\/run(?:@\w+)?\s*$/.test(text))){const task=runMatch?runMatch[1].trim():'';json(res,200,{ok:true});if(!task)tg('sendMessage',{chat_id:chatId,text:'Usage: /run <website task>'}).catch(()=>{});else executeTask(chatId,task.slice(0,3000));return;}
+if(chatId&&/^\/panel(?:@\w+)?\b/.test(text)){json(res,200,{ok:true});tg('sendMessage',{chat_id:chatId,text:'Ready panel',reply_markup:{inline_keyboard:[[{text:'Open ready panel',web_app:{url:PANEL_URL}}]]}}).catch(()=>{});return;}
+const runMatch=text.match(/^\/run(?:@\w+)?\s+([\s\S]+)/);if(chatId&&(runMatch||/^\/run(?:@\w+)?\s*$/.test(text))){const task=runMatch?runMatch[1].trim():'';json(res,200,{ok:true});if(!task)tg('sendMessage',{chat_id:chatId,text:'Usage: /run <website task>'}).catch(()=>{});else executeTask(chatId,task.slice(0,3000));return;}
 return replay(req,res,handler,buf);}
 return handler(req,res);}catch(e){return handler(req,res);}});};
-if(BOT_TOKEN)setTimeout(()=>{tg('setMyCommands',{commands:[{command:'start',description:'Start the robot'},{command:'run',description:'Run a web task: /run <task>'},{command:'panel',description:'Open the ready panel'}]}).catch(()=>{});if(process.env.WEBAPP_URL)tg('setChatMenuButton',{menu_button:{type:'web_app',text:'Agent',web_app:{url:process.env.WEBAPP_URL}}}).catch(()=>{});},6000);
+if(BOT_TOKEN)setTimeout(()=>{tg('setMyCommands',{commands:[{command:'start',description:'Start the robot'},{command:'run',description:'Run a web task: /run <task>'},{command:'panel',description:'Open the ready panel'}]}).catch(()=>{});},6000);
 console.log('enhance layer active; allowlist='+(ALLOWED.size?ALLOWED.size+' users':'open'));
