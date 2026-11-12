@@ -7,6 +7,7 @@ const WEBAPP_URL=process.env.WEBAPP_URL||'https://azhwan609.github.io/shado-comp
 const DASHBOARD_URL=process.env.COMPOSIO_DASHBOARD_URL||'https://dashboard.composio.dev/';
 const URL_ASSETS=process.env.USE_URL_ASSETS==='1';
 const CLEANUP=process.env.BOT_CLEANUP==='1';
+const MENU_ONLY=process.env.MENU_ONLY==='1';
 const ADMINS=[8826973652,1983136657];
 const GIRL='CgACAgQAAxkDAAMHavHvMgZgcXdbWRmrRJfRuoKpC9cAAqkLAALpOJRT7rN5puLwZdM9BA';
 const GIRL_URL='https://imageupload.io/f/L7t2uuIZ.jpg';
@@ -30,5 +31,6 @@ if(url.pathname==='/api/command'&&req.method==='POST'){const b=await readJson(re
 const m=url.pathname.match(/^\/api\/status\/(.+)$/);if(m&&req.method==='GET'){const d=await hb('/api/task/browser-use/'+encodeURIComponent(decodeURIComponent(m[1])),'GET');return sendJson(res,200,d);}
 return sendJson(res,404,{error:'not found'});}catch(e){return sendJson(res,500,{error:e.message});}});
 server.listen(PORT,async()=>{console.log('shado-agent on '+PORT);if(CLEANUP){if(BOT_TOKEN){try{await tg('deleteWebhook',{drop_pending_updates:false});console.log('cleanup webhook deleted');}catch(e){console.error('cleanup webhook failed',e.message);}try{await tg('setChatMenuButton',{menu_button:{type:'commands'}});console.log('cleanup menu reset');}catch(e){console.error('cleanup menu failed',e.message);}try{await tg('deleteMyCommands',{});console.log('cleanup commands deleted');}catch(e){console.error('cleanup commands failed',e.message);}}return;}
+if(MENU_ONLY){if(BOT_TOKEN){try{await tg('setChatMenuButton',{menu_button:{type:'web_app',text:'Agent',web_app:{url:WEBAPP_URL}}});console.log('menu button set');}catch(e){console.error('menu button failed',e.message);}try{await tg('setMyCommands',{commands:[{command:'start',description:'Start the robot'}]});console.log('commands set');}catch(e){console.error('commands failed',e.message);}}return;}
 const ext=process.env.RENDER_EXTERNAL_URL;if(BOT_TOKEN&&ext){try{await tg('setWebhook',{url:ext+'/telegram',allowed_updates:['message']});console.log('webhook set');}catch(e){console.error(e.message);}}
 if(BOT_TOKEN){try{await tg('setChatMenuButton',{menu_button:{type:'web_app',text:'Agent',web_app:{url:WEBAPP_URL}}});console.log('menu button set');}catch(e){console.error('menu button failed',e.message);}try{await tg('setMyCommands',{commands:[{command:'start',description:'Start the robot'}]});console.log('commands set');}catch(e){console.error('commands failed',e.message);}}});
