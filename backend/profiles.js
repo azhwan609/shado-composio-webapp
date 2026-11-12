@@ -57,7 +57,10 @@ const PROFILE_CLIENT=[
 'load();loadLogins();',
 '})();'
 ].join('\n');
-function injectedPanel(){let html=fs.readFileSync(PANEL_FILE,'utf8');if(typeof html!=='string')html=html.toString('utf8');if(html.includes('id="browser-profiles"'))return html;if(html.includes('</style>'))html=html.replace('</style>',PROFILE_CSS+'</style>');const marker='<div class="card"><h2>Autonomous Agent</h2>';if(html.includes(marker))html=html.replace(marker,PROFILE_CARD+marker);if(html.includes('<input id="site"'))html=html.replace('<input id="site"','<select id="profileSelect"><option value="">Default saved profile</option></select><input id="site"');return html.replace('</body></html>','<script>'+PROFILE_CLIENT+'</'+'script></body></html>');}
+const _profileOrigRead=fs.readFileSync.bind(fs);
+function injectProfileHtml(html){if(typeof html!=='string')html=html.toString('utf8');if(html.includes('id="browser-profiles"'))return html;if(html.includes('</style>'))html=html.replace('</style>',PROFILE_CSS+'</style>');const marker='<div class="card"><h2>Autonomous Agent</h2>';if(html.includes(marker))html=html.replace(marker,PROFILE_CARD+marker);if(html.includes('<input id="site"'))html=html.replace('<input id="site"','<select id="profileSelect"><option value="">Default saved profile</option></select><input id="site"');return html.replace('</body></html>','<script>'+PROFILE_CLIENT+'</'+'script></body></html>');}
+function injectedPanel(){return injectProfileHtml(_profileOrigRead(PANEL_FILE,'utf8'));}
+if(!fs.readFileSync.__profilePatch){const patchedProfileRead=function(file,options){const out=_profileOrigRead.apply(fs,arguments);try{if(String(file)===PANEL_FILE){if(typeof out==='string')return injectProfileHtml(out);if(Buffer.isBuffer(out))return Buffer.from(injectProfileHtml(out.toString('utf8')));}}catch(e){}return out;};patchedProfileRead.__profilePatch=true;fs.readFileSync=patchedProfileRead;}
 const originalCreateServer=http.createServer;
 http.createServer=function(handler){return originalCreateServer(async(req,res)=>{try{const url=new URL(req.url||'/','http://localhost');
 if(req.method==='GET'&&(url.pathname==='/panel'||url.pathname==='/ready')){try{res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});res.end(injectedPanel());}catch(e){json(res,503,{error:'profile panel unavailable'});}return;}
