@@ -2,8 +2,16 @@
   "name": "shado-agent-backend",
   "private": true,
   "main": "server.js",
-  "scripts": {"start": "node -r ./profiles.js -r ./secure-login.js -r ./enhance.js server.js"},
-  "engines": {">=18": true},
-  "optionalDependencies": {"ffmpeg-static": "5.2.0"},
-  "dependencies": {"pg": "^8.13.1"}
+  "scripts": {
+    "start": "node -r ./profiles.js -r ./secure-login.js -r ./enhance.js server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "optionalDependencies": {
+    "ffmpeg-static": "5.2.0"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
 }
