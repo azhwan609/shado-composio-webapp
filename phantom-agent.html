@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>SHIWA Agent</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%}
+body{background:#0a0a0a;color:#f4f4f4;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background-image:radial-gradient(rgba(255,255,255,.13) 1px,transparent 1.4px);background-size:9px 9px;padding:calc(18px + env(safe-area-inset-top)) 18px calc(26px + env(safe-area-inset-bottom))}
+button{font-family:inherit;color:inherit}
+.top{display:flex;align-items:flex-start;justify-content:space-between}
+.icon-btn{width:44px;height:44px;border-radius:13px;border:1px solid #2b2b2b;background:rgba(22,22,22,.92);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}.icon-btn:active{transform:scale(.94)}
+.icon-btn svg{width:21px;height:21px;stroke:#e8e8e8;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.brand{display:flex;align-items:flex-start;gap:12px;margin-top:2px}
+.brand-name{font-size:25px;font-weight:900;letter-spacing:.14em;line-height:1;text-align:left}
+.brand-ghost{font-size:25px;font-weight:900;letter-spacing:.14em;line-height:1;color:rgba(255,255,255,.14);transform:scaleY(-1);margin-top:3px;mask-image:linear-gradient(to top,rgba(0,0,0,.7),transparent 85%);-webkit-mask-image:linear-gradient(to top,rgba(0,0,0,.7),transparent 85%)}
+.logo{width:46px;height:46px;flex:0 0 auto}
+.bar{display:flex;align-items:center;justify-content:space-between;margin-top:34px}
+.tabs{display:flex;align-items:center;gap:6px;padding:5px;border:1px solid #2b2b2b;border-radius:999px;background:rgba(20,20,20,.92)}
+.tab{display:flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:9px 15px;font-size:14px;font-weight:700;background:#2a2a2a;color:#fff;cursor:pointer}
+.tab svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab-plain{background:transparent;color:#e8e8e8;padding:9px 12px}
+.actions{display:flex;gap:9px}
+.round-btn{width:42px;height:42px;border-radius:50%;border:1px solid #2e2e2e;background:rgba(22,22,22,.92);display:flex;align-items:center;justify-content:center;cursor:pointer}.round-btn:active{transform:scale(.94)}
+.round-btn svg{width:19px;height:19px;stroke:#e8e8e8;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.subbar{margin-top:16px;display:flex;justify-content:flex-start}
+.card{margin-top:22px;border:1.5px solid #d97706;border-radius:22px;background:rgba(12,12,12,.72);box-shadow:0 0 22px rgba(217,119,6,.16),inset 0 0 32px rgba(217,119,6,.04);min-height:56dvh;display:flex;flex-direction:column;padding:18px}
+.card-head{display:flex;align-items:center;gap:10px;color:#fff}
+.card-head svg{width:25px;height:25px;stroke:#fff;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.dots{font-size:22px;letter-spacing:.18em;color:#d8d8d8;line-height:1;padding-bottom:8px}
+.spacer{flex:1}
+.controls{display:flex;flex-direction:column;gap:10px}
+.row{display:flex;align-items:center;gap:9px}
+.ctl{display:flex;align-items:center;gap:8px;border:1px solid #303030;background:rgba(24,24,24,.95);border-radius:11px;padding:12px 13px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}.ctl:active{transform:scale(.97)}
+.ctl svg{width:18px;height:18px;stroke:#e8e8e8;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.ctl .chev{width:14px;height:14px;stroke:#9a9a9a}
+.ctl-run{padding-right:16px}
+.ctl-timer{padding-right:16px}
+.mic{margin-left:auto;width:46px;height:46px;border-radius:50%;border:1px solid #303030;background:rgba(24,24,24,.95);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto}.mic:active{transform:scale(.94)}
+.mic svg{width:20px;height:20px;stroke:#e8e8e8;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+<header class="top">
+<button class="icon-btn" type="button" aria-label="Exit"><svg viewBox="0 0 24 24"><path d="M14 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8"/><path d="M10 12h10"/><path d="M17 8l4 4-4 4"/></svg></button>
+<div class="brand">
+<svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><path d="M35.5 12.5A15 15 0 1 0 35.5 35.5" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="17" cy="35" r="6.5" fill="#ec4899"/></svg>
+<div><div class="brand-name">SHIWA</div><div class="brand-ghost">SHIWA</div></div>
+</div>
+<span style="width:44px"></span>
+</header>
+<div class="bar">
+<div class="tabs"><button class="tab" type="button"><svg viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg>Sheets</button><button class="tab tab-plain" type="button">Bulk</button></div>
+<div class="actions">
+<button class="round-btn" type="button" aria-label="Web"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"/></svg></button>
+<button class="round-btn" type="button" aria-label="Upload"><svg viewBox="0 0 24 24"><path d="M12 16V4"/><path d="M6 10l6-6 6 6"/><path d="M4 20h16"/></svg></button>
+<button class="round-btn" type="button" aria-label="Folder"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button>
+</div>
+</div>
+<div class="subbar"><button class="icon-btn" type="button" aria-label="Library"><svg viewBox="0 0 24 24"><path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h11"/><path d="M9 8h5"/></svg></button></div>
+<main class="card">
+<div class="card-head"><svg viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 8V4"/><circle cx="12" cy="3" r="1"/><circle cx="9" cy="13" r=".6"/><circle cx="15" cy="13" r=".6"/><path d="M9.5 16.5h5"/></svg><span class="dots">...</span></div>
+<div class="spacer"></div>
+<div class="controls">
+<div class="row">
+<button class="ctl ctl-run" type="button"><svg viewBox="0 0 24 24"><path d="M9 3a4 4 0 0 0-4 4c-1.2.6-2 1.8-2 3.2 0 .8.3 1.6.8 2.2A4.5 4.5 0 0 0 9 21z"/><path d="M15 3a4 4 0 0 1 4 4c1.2.6 2 1.8 2 3.2 0 .8-.3 1.6-.8 2.2A4.5 4.5 0 0 1 15 21z"/><path d="M9 3v18M15 3v18"/></svg>Run Agent<svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+<button class="ctl" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M9 20h6M12 16v4"/></svg><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+<button class="ctl" type="button"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+</div>
+<div class="row">
+<button class="ctl ctl-timer" type="button"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>15 min<svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+<button class="ctl" type="button"><svg viewBox="0 0 24 24"><path d="M14.5 6.5a4 4 0 0 1 5.6-3.6l-3 3 1.4 2.8 3-1a4 4 0 0 1-5.3 5L8 20.9a2 2 0 0 1-2.8-2.8l8.3-8.3a4 4 0 0 1 1-3.3z"/></svg><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+<button class="mic" type="button" aria-label="Microphone"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+</div>
+</div>
+</main>
+<script>(function(){var tg=window.Telegram&&window.Telegram.WebApp;if(tg){tg.ready();tg.expand();if(tg.setHeaderColor)tg.setHeaderColor('#0a0a0a');if(tg.setBackgroundColor)tg.setBackgroundColor('#0a0a0a');}})();</script>
+</body>
+</html>
